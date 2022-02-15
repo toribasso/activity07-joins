@@ -1,6 +1,6 @@
 ---
 title: "Activity 7"
-author: "Name"
+author: "Viktoria Basso"
 output: github_document
 ---
 
@@ -13,6 +13,10 @@ knitr::opts_chunk$set(error = TRUE)
 Load the entirety of the `{tidyverse}`.
 Be sure to avoid printing out any unnecessary information and give the code chunk a meaningful name.
 
+```{r loading_tidyverse, message=FALSE}
+library(tidyverse)
+library(readr)
+```
 
 
 In this activity we will explore joining information that is contained in multiple data files.
@@ -31,8 +35,11 @@ Read each of the three files using `here::here` in combination with the appropri
 Assign each file to a meaningful object name (e.g., `dennys`,`laquinta`, and `states`), be sure to avoid printing any unnecessary information.
 Give your code chunk a meaningful name.
 
-
-
+```{r importingactivitydata, message=FALSE}
+dennys <- read_csv(here::here("data","dennys.csv"))
+laquinta <- read_csv(here::here("data","laquinta.csv"))
+states <- read_csv(here::here("data","states.csv"))
+```
 
 ### Provide more information
 
@@ -56,33 +63,33 @@ str(states)
 
 #### Denny's data
 
-| Variable    | Type | Brief description                 |
-|-------------|------|-----------------------------------|
-| `address`   |      | street address of dennys location |
-| `city`      |      | city of dennys location           |
-| `state`     |      | state of dennys location          |
-| `zip`       |      | zip code of dennys location       |
-| `longitude` |      | east-west position on Earth       |
-| `latitude`  |      | north-south position on Earth     |
+| Variable    | Type    | Brief description                 |
+|-------------|---------|-----------------------------------|
+| `address`   | chr     | street address of dennys location |
+| `city`      | chr     | city of dennys location           |
+| `state`     | chr     | state of dennys location          |
+| `zip`       | chr     | zip code of dennys location       |
+| `longitude` | num     | east-west position on Earth       |
+| `latitude`  | num     | north-south position on Earth     |
 
 #### La Quinta's data
 
-| Variable    | Type | Brief description                   |
-|-------------|------|-------------------------------------|
-| `address`   |      | street address of laquinta location |
-| `city`      |      | city of laquinta location           |
-| `state`     |      | state of laquinta location          |
-| `zip`       |      | zip code of laquinta location       |
-| `longitude` |      | east-west position on Earth         |
-| `latitude`  |      | north-south position on Earth       |
+| Variable    | Type    | Brief description                   |
+|-------------|---------|-------------------------------------|
+| `address`   | chr     | street address of laquinta location |
+| `city`      | chr     | city of laquinta location           |
+| `state`     | chr     | state of laquinta location          |
+| `zip`       | chr     | zip code of laquinta location       |
+| `longitude` | num     | east-west position on Earth         |
+| `latitude`  | num     | north-south position on Earth       |
 
 #### States data
 
-| Variable       | Type | Brief description             |
-|----------------|------|-------------------------------|
-| `name`         |      | state name                    |
-| `abbreviation` |      | state abbreviation            |
-| `area`         |      | area in thousand square miles |
+| Variable       | Type    | Brief description             |
+|----------------|---------|-------------------------------|
+| `name`         | chr     | state name                    |
+| `abbreviation` |  chr    | state abbreviation            |
+| `area`         |  num    | area in thousand square miles |
 
 ![](README-img/noun_pause.png) **Planned Pause Point**: If you have any questions, contact your instructor. Otherwise feel free to continue on.
 
@@ -95,15 +102,15 @@ Look at the websites that the data come from (linked above).
 Are there any La Quinta’s locations outside of the US?
 What about Denny’s?
 
-**Response**:
-
+**Response**: While Denny's does not have any locations outside of the US, La
+Quinta does have many international locations.
 
 If we wanted to do this using the datasets, would we need to ?
 Don’t worry about implementing this yet, you only need to brainstorm some ideas.
 Include at least one idea as your answer, but you are welcome to write down a few options too.
 
-**Response**:
-
+**Response**: We could antijoin with Dennys using state, or we could filter out observations
+for La Quinta where there is not a US state.
 
 ### Preparing to Join
 
@@ -114,16 +121,23 @@ To do so, *filter* the Denny’s locations for observations where state is *not 
 Do not assign this to anything; we only want to see if we need to be aware of non-US cases.
 If there are any non-US locations, specify where these are.
 
+```{r non-USDenny}
+dennys %>% 
+  filter(!(state %in% states$abbreviation))
+```
 
 
 
-**Response**:
+**Response**: There are no Denny locations outside of the US.
 
 
 Now do this again, but using `anti_join`.
 To do so, take the Denny's locations and anti-join this with the states dataset.
 Remember to specify your `by` columns.
 
+```{r antijoindenny}
+anti_join(states, dennys, by = c("name" = "state"))
+```
 
 
 #### A Brief Aside
@@ -165,8 +179,10 @@ dennys %>%
 
 Determine if La Quinta has any locations that are outside of the US.
 
-
-
+```{r LaQuintaInternational}
+laquinta %>% 
+  filter(!(state %in% states$abbreviation))
+```
 
 #### Isolating US locations
 
@@ -174,7 +190,10 @@ For the rest of this activity, we will work with the data from the United States
 All Denny's locations in our file are in the US so we do not need to worry about updating this object, but you do need to do some work on the `laquinta` data.
 Create a new object called `laquinta_us` that only contains the locations inside the US.
 
-
+```{r filtlaquinta}
+laquinta_us <- laquinta %>% 
+  filter(state %in% states$abbreviation)
+```
 
 ### Fewest locations
 
@@ -182,24 +201,35 @@ Let's test some of our data summary skills.
 
 Which US state(s) has/ve the fewest Denny's location?
 
+```{r fewDenny}
+dennys %>%
+  group_by(state) %>%
+  summarise(count=n()) %>%
+  arrange(count)
+```
 
 
 
-**Response**:
+**Response**: Looks like DE or Deleware only has one location.
 
 
 Which US state(s) has/ve the fewest La Quinta locations?
 
+```{r fewlaQuinta}
+laquinta_us %>%
+  group_by(state) %>%
+  summarise(count=n()) %>%
+  arrange(count)
+```
 
-
-
-**Response**:
+**Response**: The state of Maine or ME has the fewest LaQuinta locations.
 
 
 Is this surprising to you? Why or why not?
 
-**Response**:
-
+**Response**: I am and I am not. I am surprised that the ones with smaller landmass
+(Rhode Island, DC, ect) were not the ones with the fewest, but this could be due
+to population density.
 
 ### Locations per thousand square miles
 
@@ -215,7 +245,14 @@ To do this, we will need to join each company's tibble with the information in t
   Therefore, we will need to specify that the `state` variable from the `dennys` tibble should be matched `by` the `abbreviation` variable from the `states` tibble.
 3. *Then*, calculate the number of Denny's locations *per* thousand square miles.
 
-
+```{r DennyCount}
+DennyCount <- dennys %>%
+  group_by(state) %>%
+  summarise(count=n()) %>%
+  arrange(count)
+inner_join(states, DennyCount, by = c("abbreviation" = "state"))
+states$loc = states$count / states$area
+```
 
 
 Which states have the most Denny's locations per thousand square miles?
