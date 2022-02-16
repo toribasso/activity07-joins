@@ -250,26 +250,32 @@ DennyCount <- dennys %>%
   group_by(state) %>%
   summarise(count=n()) %>%
   arrange(count)
-inner_join(states, DennyCount, by = c("abbreviation" = "state"))
-states$loc = states$count / states$area
+states <- inner_join(states, DennyCount, by = c("abbreviation" = "state"))
+states <- states %>% 
+  mutate(location = (count / area))
 ```
 
 
 Which states have the most Denny's locations per thousand square miles?
 
-**Response**:
+**Response**: DC, Rhode Island, and California.
 
 
 #### La Quinta
 
 Similarly as we previously did for Denny's, calculate the number of La Quinta locations *per* thousand square miles.
 
+```{r LaQuintaCount}
+LaQuintaCount <- laquinta_us %>%
+  group_by(state) %>%
+  summarise(number=n()) %>%
+  arrange(number)
+statesLaQ <- inner_join(states,LaQuintaCount, by = c("abbreviation" = "state"))
+statesLaQ <- statesLaQ %>% 
+  mutate(locationLQ = (number / area))
+```
 
-
-
-**Response**:
-
-
+**Response**: The most number per thousand miles is Rhode Island, Florida, and Connecticut.
 
 <img src="README-img/noun_pause.png" alt="pause" width = "20"/> <b>Planned Pause Point</b>: If you feel that you have a good understanding of these commands, feel free to start working on your project. The remainder of this activity will deal with creating map data visualizations.
 
